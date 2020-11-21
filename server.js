@@ -61,5 +61,7 @@ function runStart() {
           connection.end();
           break;
       }
+
+      //   console.log ("connection success")
     });
 }
