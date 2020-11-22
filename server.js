@@ -1,6 +1,8 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 
+const view = require("./utils/view.js");
+
 const connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
@@ -22,8 +24,8 @@ function runStart() {
       type: "list",
       message: "What would your like to do?",
       choices: [
-        "View All Employee",
-        "View All Employee By Department",
+        "View All Employees",
+        "View All Employees By Department",
         "View All Employees By Manager",
         "Add Employee",
         "Update Employee Role",
@@ -33,16 +35,16 @@ function runStart() {
     })
     .then(function (answer) {
       switch (answer.action) {
-        case "View All Employee":
-          viewEmployee();
+        case "View All Employees":
+          view.viewAllEmployees();
           break;
 
-        case "View All Employee By Department":
-          viewEmployeeByDepartment();
+        case "View All Employees By Department":
+          view.viewAllByDepartment();
           break;
 
         case "View All Employees By Manager":
-          viewEmployeeByManager();
+          view.viewAllByManager();
           break;
 
         case "Add Employee":
@@ -62,6 +64,6 @@ function runStart() {
           break;
       }
 
-      //   console.log ("connection success")
+        console.log ("connection success")
     });
 }
