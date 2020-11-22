@@ -14,8 +14,9 @@ SELECT * FROM role;
 
 INSERT INTO employee (first_name, last_name, role_id)
     VALUES ("Bill","Target", 1), ("LeAnne","Glamm", 3), ("Charlie","Boyd", 5);
-SELECT * FROM employee;
+
 
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
     VALUES ("Audrey","Blank", 2, 1),("Peter","Bing", 2, 1), ("Doreen","Salis", 4, 3),("Billy","Doe", 4, 3),("Andy","Joe", 6, 5), ("Anne","Great", 6, 5);
 
+SELECT * FROM employee;
