@@ -36,34 +36,33 @@ function runStart() {
     .then(function (answer) {
       switch (answer.action) {
         case "View All Employees":
-          view.viewAllEmployees();
+          view.viewAllEmployees(connection, runStart);
           break;
 
-        case "View All Employees By Department":
-          view.viewAllByDepartment();
-          break;
+        // case "View All Employees By Department":
+        //   view.viewAllByDepartment(connection, runStart);
+        //   break;
 
-        case "View All Employees By Manager":
-          view.viewAllByManager();
-          break;
+        // case "View All Employees By Manager":
+        //   view.viewAllByManager(connection, runStart);
+        //   break;
 
-        case "Add Employee":
-          addEmployee();
-          break;
+        // case "Add Employee":
+        //   addEmployee(connection, runStart);
+        //   break;
 
-        case "Update Employee Role":
-          updateEmployeeRole();
-          break;
+        // case "Update Employee Role":
+        //   updateEmployeeRole(connection, runStart);
+        //   break;
 
-        case "Update Employee Manager":
-          updateEmployeeManager();
-          break;
+        // case "Update Employee Manager":
+        //   updateEmployeeManager(connection, runStart);
+        //   break;
 
         case "EXIT":
           connection.end();
           break;
       }
 
-        console.log ("connection success")
     });
 }
