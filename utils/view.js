@@ -1,13 +1,14 @@
 const inquirer = require("inquirer");
-const { start } = require("repl");
 
-function viewAllEmployees(){
+
+function viewAllEmployees(connection, runStart) {
     let query = "SELECT e.emp_id, e.first_name, e.last_name, r.title, r.salary, d.name AS department, m.first_name AS manager FROM employee e LEFT JOIN employee AS m ON m.emp_id = e.manager_id JOIN role r ON e.role_id = r.role_id JOIN department d ON r.department_id = d.dept_id;";
     connection.query(query, function(err, res){
         if (err) throw err;
         console.table(res);
+        runStart();
     });   
-    runStart();
+    
  
 };
 
