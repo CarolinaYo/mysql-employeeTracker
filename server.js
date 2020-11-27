@@ -1,14 +1,13 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
-
-const view = require("./utils/view.js");
+const { SSL_OP_EPHEMERAL_RSA } = require("constants");
 
 const connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
   user: "root",
   password: "B00tcamp!",
-  datbase: "employee_db",
+  database: "employee_db",
 });
 
 connection.connect(function (err) {
@@ -36,33 +35,117 @@ function runStart() {
     .then(function (answer) {
       switch (answer.action) {
         case "View All Employees":
-          view.viewAllEmployees(connection, runStart);
+          viewAllEmployees();
+
           break;
 
-        // case "View All Employees By Department":
-        //   view.viewAllByDepartment(connection, runStart);
-        //   break;
+        case "View All Employees By Department":
+          viewAllByDepartment();
+          break;
 
-        // case "View All Employees By Manager":
-        //   view.viewAllByManager(connection, runStart);
-        //   break;
+        case "View All Employees By Manager":
+          viewAllByManager();
+          break;
 
-        // case "Add Employee":
-        //   addEmployee(connection, runStart);
-        //   break;
+        case "Add Employee":
+          addEmployee();
+          break;
 
-        // case "Update Employee Role":
-        //   updateEmployeeRole(connection, runStart);
-        //   break;
+        case "Update Employee Role":
+          updateEmployeeRole();
+          break;
 
-        // case "Update Employee Manager":
-        //   updateEmployeeManager(connection, runStart);
-        //   break;
+        case "Update Employee Manager":
+          updateEmployeeManager();
+          break;
 
         case "EXIT":
           connection.end();
           break;
       }
-
     });
+}
+
+function viewAllEmployees() {
+  var query =
+    "SELECT e.emp_id, e.first_name, e.last_name, r.title, r.salary, d.name AS department, m.first_name AS manager FROM employee e LEFT JOIN employee AS m ON m.emp_id = e.manager_id JOIN role r ON e.role_id = r.role_id JOIN department d ON r.department_id = d.dept_id;";
+
+  connection.query(query, function (err, res) {
+    // console.log (connection)
+
+    if (err) throw err;
+    console.table(res);
+    runStart();
+  });
+}
+
+function viewAllByDepartment() {
+  connection.query("SELECT * FROM department", function (err, result) {
+    if (err) throw err;
+    
+    let deptSelection = [];
+    for (var i = 0; i < result.length; i++) {
+      deptSelection.push(result[i].name);
+    }
+
+    inquirer
+      .prompt({
+        name: "department",
+        type: "list",
+        message: "Please select the department to be viewed: ",
+        choices: deptSelection,
+      })
+      .then(function (selection) {
+        console.log(selection.department);
+
+        let query =
+          "SELECT e.emp_id, e.first_name, e.last_name, r.title, r.salary, d.name AS department, m.first_name AS manager FROM employee e LEFT JOIN employee AS m ON m.emp_id = e.manager_id JOIN role r ON e.role_id = r.role_id JOIN department d ON r.department_id = d.dept_id WHERE d.name = ? ORDER BY e.emp_id;";
+
+        connection.query(query, selection.department, function (err, res) {
+          if (err) throw err;
+          console.table(res);
+          runStart();
+        });
+      });
+  });
+}
+
+function viewAllByManager() {
+
+    connection.query("SELECT first_name FROM employee WHERE manager_id IS null", function (err, result) {
+        if (err) throw err;
+
+        console.log(result);
+
+        let mgrSelection = [];
+
+        for (var i = 0; i < result.length; i++) {
+          mgrSelection.push(result[i].first_name);
+        }
+    
+        inquirer
+          .prompt({
+            name: "manager",
+            type: "list",
+            message: "Please select the manager's name:",
+            choices: mgrSelection,
+          })
+          .then(function (selection) {
+            console.log(selection.manager);
+
+              let query="SELECT e.emp_id, e.first_name, e.last_name, r.title, r.salary, d.name AS department, m.first_name AS manager FROM employee e LEFT JOIN employee AS m ON m.emp_id = e.manager_id JOIN role r ON e.role_id = r.role_id JOIN department d ON r.department_id = d.dept_id WHERE m.first_name = ? ORDER BY e.emp_id;";
+    
+            connection.query(query, selection.manager, function (err, res) {
+              if (err) throw err;
+              console.table(res);
+              runStart();
+            });
+          });
+      });
+
+
+
+
+
+
 }
