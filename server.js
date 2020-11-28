@@ -26,9 +26,8 @@ function runStart() {
         "View All Employees",
         "View All Employees By Department",
         "View All Employees By Manager",
-        "Add Employee",
+        "Add New Employee",
         "Update Employee Role",
-        "Update Employee Manager",
         "EXIT",
       ],
     })
@@ -47,16 +46,12 @@ function runStart() {
           viewAllByManager();
           break;
 
-        case "Add Employee":
+        case "Add New Employee":
           addEmployee();
           break;
 
         case "Update Employee Role":
           updateEmployeeRole();
-          break;
-
-        case "Update Employee Manager":
-          updateEmployeeManager();
           break;
 
         case "EXIT":
@@ -68,7 +63,7 @@ function runStart() {
 
 function viewAllEmployees() {
   let query =
-    "SELECT e.emp_id, e.first_name, e.last_name, r.title, r.salary, d.name AS department, m.first_name AS manager FROM employee e LEFT JOIN employee AS m ON m.emp_id = e.manager_id JOIN role r ON e.role_id = r.role_id JOIN department d ON r.department_id = d.dept_id;";
+    "SELECT e.emp_id, e.first_name, e.last_name, r.title, r.salary, d.name AS department, m.first_name AS manager FROM employee e LEFT JOIN employee AS m ON m.emp_id = e.manager_id JOIN role r ON e.role_id = r.role_id JOIN department d ON r.department_id = d.dept_id ORDER BY emp_id;";
 
   connection.query(query, function (err, res) {
     // console.log (connection)
@@ -132,8 +127,6 @@ function viewAllByManager() {
           choices: mgrSelection,
         })
         .then(function (selection) {
-          console.log(selection.manager);
-
           let query =
             "SELECT e.emp_id, e.first_name, e.last_name, r.title, r.salary, d.name AS department, m.first_name AS manager FROM employee e LEFT JOIN employee AS m ON m.emp_id = e.manager_id JOIN role r ON e.role_id = r.role_id JOIN department d ON r.department_id = d.dept_id WHERE m.first_name = ? ORDER BY e.emp_id;";
 
@@ -148,13 +141,12 @@ function viewAllByManager() {
 }
 
 function addEmployee() {
-  // let newEmployee= {};
   let newRole = [];
   let depName = [];
 
   connection.query("SELECT * FROM department", function (err, result) {
     if (err) throw err;
-    console.log(result);
+    // console.log(result);
 
     for (var i = 0; i < result.length; i++) {
       depName.push(result[i].name);
@@ -171,7 +163,8 @@ function addEmployee() {
       .then(function (answer) {
         connection.query(
           "SELECT r.title FROM role r INNER JOIN department d ON r.department_id = d.dept_id WHERE d.name = '" +
-            answer.department +"'",
+            answer.department +
+            "'",
           function (err, result) {
             if (err) throw err;
             // console.log(result);
@@ -204,22 +197,60 @@ function addEmployee() {
               .then(function (answer) {
                 var roleId;
                 connection.query(
-                  "SELECT role_id FROM role WHERE title = '" + answer.title +"'",
+                  "SELECT role_id FROM role WHERE title = '" +
+                    answer.title +
+                    "'",
                   function (err, result) {
                     if (err) throw err;
-                    console.log("role id: ", result);
                     roleId = result[0].role_id;
 
+                    //asking for manager's name
+
                     connection.query(
-                      "INSERT INTO employee SET ?",
-                      {
-                        first_name: answer.first_name,
-                        last_name: answer.last_name,
-                        role_id: roleId,
-                      },
+                      "SELECT first_name FROM employee WHERE manager_id IS null",
                       function (err, result) {
                         if (err) throw err;
-                        viewAllEmployees();
+
+                        //   console.log(result);
+
+                        let mgrSelection = [];
+
+                        for (var i = 0; i < result.length; i++) {
+                          mgrSelection.push(result[i].first_name);
+                        }
+
+                        inquirer
+                          .prompt({
+                            name: "manager_name",
+                            type: "list",
+                            message: "Please select the manager's name:",
+                            choices: mgrSelection,
+                          })
+                          .then(function (selection) {
+                            var mgrId;
+                            connection.query(
+                              "SELECT role_id FROM employee WHERE first_name = ?",
+                              selection.manager_name,
+                              function (err, result) {
+                                if (err) throw err;
+                                mgrId = result[0].emp_id;
+
+                                connection.query(
+                                  "INSERT INTO employee SET ?",
+                                  {
+                                    first_name: answer.first_name,
+                                    last_name: answer.last_name,
+                                    role_id: roleId,
+                                    manager_id: mgrId,
+                                  },
+                                  function (err) {
+                                    if (err) throw err;
+                                    viewAllEmployees();
+                                  }
+                                );
+                              }
+                            );
+                          });
                       }
                     );
                   }
@@ -235,6 +266,3 @@ function addEmployee() {
 
 // }
 
-// function updateEmployeeManager(){
-
-// };
