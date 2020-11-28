@@ -143,9 +143,107 @@ function viewAllByManager() {
           });
       });
 
-
-
-
-
-
 }
+
+function addEmployee() {
+    let newEmployee= {};
+    let newRole = [];
+    let mgrName =[];
+
+    connection.query("SELECT * FROM role", function (err, result) {
+        
+        if (err) throw err;
+        console.log(result);
+
+       
+
+        for (var i = 0; i < result.length; i++) {
+            newRole.push(result[i].title);
+        }
+    })
+
+    connection.query("SELECT first_name FROM employee WHERE manager_id IS null", function (err, result) {
+        if (err) throw err;
+
+        console.log(result);
+
+        for (var i = 0; i < result.length; i++) {
+            mgrName.push(result[i].first_name);
+        }
+    })
+
+    inquirer
+    .prompt([
+        {
+            name: "first_name",
+            type: "input",
+            message: "Enter first name:",
+            default: "Jane"
+        },
+        {
+            name: "last_name",
+            type: "input",
+            message: "Enter last name:",
+            default: "Nubee"
+        },
+        {
+            name: "title",
+            type: "list",
+            message: "Select employee's role:",
+            choices: "newRole"
+           
+        }
+        {
+            name: "manager",
+            type: "list",
+            message: "Select employee's manager:",
+            choices: "newRole"
+           
+        }
+        ]) .then (function(answer) {
+
+    // when finished prompting, insert a new item into the db with that info
+      connection.query("INSERT INTO employee SET ?", function(err, result){
+
+        if (err) throw err;
+
+        //need to INSERT into employee db
+        //   newEmployee.first_name: answer.first_name,
+        //   newEmployee.last_name: answer.last_name,
+        //  newEmployee.mgrName: answer.mgrName,
+
+        //this one is in table role
+        //   newEmployee.title: answer.title,
+                
+
+       
+       
+        console.log("New employee: ",newEmployee ,"has been added!");
+
+
+      }
+        
+        
+        
+      );
+
+        })
+
+    
+}
+
+function updateEmployeeRole(){
+
+
+    
+}
+
+function updateEmployeeManager(){
+
+
+};
+
+
+
+
+
