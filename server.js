@@ -262,7 +262,68 @@ function addEmployee() {
   });
 }
 
-// function updateEmployeeRole(){
+function updateEmployeeRole() {
+  let updateEmployee = [];
+    
+  connection.query("SELECT * FROM employee", function (err, result) {
+    if (err) throw err;
+    // console.log(result);
 
-// }
+    for (var i = 0; i < result.length; i++) {
+      updateEmployee.push(result[i].first_name);
+    }
 
+    inquirer
+      .prompt([
+        {
+          name: "updateEmployee",
+          type: "list",
+          message: "Select employee you would like to update",
+          choices: updateEmployee,
+        },
+      ])
+      .then(function (answer) {
+        first_name = answer.updateEmployee;
+
+        let updateRole = [];
+
+        connection.query("SELECT * FROM role", function (err, result) {
+          if (err) throw err;
+          // console.log(result);
+
+          for (var i = 0; i < result.length; i++) {
+            updateRole.push(result[i].title);
+          }
+
+          inquirer
+            .prompt([
+              {
+                name: "updateRole",
+                type: "list",
+                message: "Select employee's new title",
+                choices: updateRole,
+              },
+            ])
+            .then(function (answer) {
+              connection.query(
+                "SELECT * FROM role WHERE title =?",
+                answer.updateRole,
+                function (err, result) {
+                  if (err) throw err;
+                //   console.log(result);
+                role_id=result[0].role_id;
+
+                connection.query("UPDATE employee SET role_id = ? WHERE first_name = ?", [role_id, first_name], function(err) {
+                    if (err) throw err;
+                    console.log("Employee title has been updated")
+                    viewAllEmployees()
+                })
+                    
+                }
+              );
+            });
+        });
+      });
+  });
+
+}
