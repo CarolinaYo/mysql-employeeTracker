@@ -1,6 +1,8 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const { SSL_OP_EPHEMERAL_RSA } = require("constants");
+const { type } = require("os");
+const { table } = require("console");
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -13,6 +15,17 @@ const connection = mysql.createConnection({
 connection.connect(function (err) {
   if (err) throw err;
   console.log("connected as id " + connection.threadId + "\n");
+  // console.log(`  _____ _____ _____ _____ _____ _____ _____ _____ \n\
+  // |_____|_____|_____|_____|_____|_____|_____|_____| \n\
+  //   ___ _ __ ___  _ __ | | ___  _   _  ___  ___ \n\
+  //  / _ \ '_ ` _ \| '_ \| |/ _ \| | | |/ _ \/ _ \ \n\
+  // |  __/ | | | | | |_) | | (_) | |_| |  __/  __/ \n\
+  //  \___|_| |_| |_| .__/|_|\___/ \__, |\___|\___|
+  // | |_ _ __ __ _ |_|_| | _____ _|___/
+  // | __| '__/ _` |/ __| |/ / _ \ '__|
+  // | |_| | | (_| | (__|   <  __/ |
+  //  \__|_|__\__,_|\___|_|\_\___|_|_____ _____ _____
+  // |_____|_____|_____|_____|_____|_____|_____|_____|`)
   runStart();
 });
 
@@ -26,6 +39,7 @@ function runStart() {
         "View All Employees",
         "View All Employees By Department",
         "View All Employees By Manager",
+        "Add New Department",
         "Add New Employee",
         "Update Employee Role",
         "EXIT",
@@ -44,6 +58,10 @@ function runStart() {
 
         case "View All Employees By Manager":
           viewAllByManager();
+          break;
+
+        case "Add New Department":
+          addDepartment();
           break;
 
         case "Add New Employee":
@@ -138,6 +156,43 @@ function viewAllByManager() {
         });
     }
   );
+}
+
+function viewAllDepartment() {
+  connection.query("SELECT * FROM department", function (err, result) {
+    if (err) throw err;
+    console.table(result);
+    runStart();
+  });
+}
+
+function addDepartment() {
+  inquirer
+    .prompt([
+      {
+        name: "department",
+        type: "input",
+        message: "Please enter new department:",
+        default: "Procurement",
+        validate: function (answer) {
+          if (answer.length < 1) {
+            return console.log("New department name is required");
+          }
+          return true;
+        },
+      },
+    ])
+    .then(function (answer) {
+      connection.query(
+        "INSERT INTO department (name) VALUES (?)",
+        answer.department,
+        function (err) {
+          if (err) throw err;
+          console.log("New department added");
+          viewAllDepartment();
+        }
+      );
+    });
 }
 
 function addEmployee() {
@@ -264,7 +319,7 @@ function addEmployee() {
 
 function updateEmployeeRole() {
   let updateEmployee = [];
-    
+
   connection.query("SELECT * FROM employee", function (err, result) {
     if (err) throw err;
     // console.log(result);
@@ -310,20 +365,22 @@ function updateEmployeeRole() {
                 answer.updateRole,
                 function (err, result) {
                   if (err) throw err;
-                //   console.log(result);
-                role_id=result[0].role_id;
+                  //   console.log(result);
+                  role_id = result[0].role_id;
 
-                connection.query("UPDATE employee SET role_id = ? WHERE first_name = ?", [role_id, first_name], function(err) {
-                    if (err) throw err;
-                    console.log("Employee title has been updated")
-                    viewAllEmployees()
-                })
-                    
+                  connection.query(
+                    "UPDATE employee SET role_id = ? WHERE first_name = ?",
+                    [role_id, first_name],
+                    function (err) {
+                      if (err) throw err;
+                      console.log("Employee title has been updated");
+                      viewAllEmployees();
+                    }
+                  );
                 }
               );
             });
         });
       });
   });
-
 }
