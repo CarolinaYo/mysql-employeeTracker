@@ -39,6 +39,7 @@ function runStart() {
         "View All Employees",
         "View All Employees By Department",
         "View All Employees By Manager",
+        "View All Department",
         "Add New Department",
         "Add New Employee",
         "Update Employee Role",
@@ -49,7 +50,6 @@ function runStart() {
       switch (answer.action) {
         case "View All Employees":
           viewAllEmployees();
-
           break;
 
         case "View All Employees By Department":
@@ -58,6 +58,10 @@ function runStart() {
 
         case "View All Employees By Manager":
           viewAllByManager();
+          break;
+
+        case "View All Department":
+          viewAllDepartment();
           break;
 
         case "Add New Department":
