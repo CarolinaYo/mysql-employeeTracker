@@ -40,7 +40,8 @@ function runStart() {
         "View All Employees By Department",
         "View All Employees By Manager",
         "View All Department",
-        "Add New Department",
+        "Add A New Department",
+        "Add A New Role",
         "Add New Employee",
         "Update Employee Role",
         "EXIT",
@@ -64,8 +65,12 @@ function runStart() {
           viewAllDepartment();
           break;
 
-        case "Add New Department":
+        case "Add A New Department":
           addDepartment();
+          break;
+
+        case "Add A New Role":
+          addRole();
           break;
 
         case "Add New Employee":
@@ -170,6 +175,14 @@ function viewAllDepartment() {
   });
 }
 
+function viewAllRole() {
+  connection.query("SELECT * FROM role", function (err, result) {
+    if (err) throw err;
+    console.table(result);
+    runStart();
+  });
+}
+
 function addDepartment() {
   inquirer
     .prompt([
@@ -197,6 +210,69 @@ function addDepartment() {
         }
       );
     });
+}
+
+function addRole() {
+  let depName = [];
+  // let newRole = {};
+
+  connection.query("SELECT * FROM department", function (err, result) {
+    if (err) throw err;
+    // console.log(result);
+    for (var i = 0; i < result.length; i++) {
+      depName.push(result[i].name);
+    }
+
+    inquirer
+      .prompt([
+        {
+          name: "title",
+          type: "input",
+          message: "What is the title of the new role",
+          default: "Intern",
+        },
+        {
+          name: "salary",
+          type: "input",
+          message: "What is the salary for this title",
+          default: "30000",
+        },
+        {
+          name: "depName",
+          type: "list",
+          message: "Please select the department for this title",
+          choices: depName,
+        },
+      ])
+      .then(function (answer) {
+        // console.log(answer);
+        const roleDepName = answer.depName;
+
+        connection.query(
+          "SELECT dept_id FROM department WHERE name = ?",
+          roleDepName,
+          function (err, res) {
+            if (err) throw err;
+            // console.log(res);
+            const department_id = res[0].dept_id;
+
+            connection.query(
+              "INSERT INTO role SET ?",
+              {
+                title: answer.title,
+                salary: answer.salary,
+                department_id: department_id,
+              },
+
+              function (err, res) {
+                if (err) throw err;
+                viewAllRole();
+              }
+            );
+          }
+        );
+      });
+  });
 }
 
 function addEmployee() {
